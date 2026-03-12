@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>COPSOQ II — Fatores de Risco Psicossocial</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;}
+  table{border-collapse:collapse;width:100%;}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:#f1f1f1;}
+  ::-webkit-scrollbar-thumb{background:#c1c1c1;border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useMemo,useRef}=React;
+const {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer}=Recharts;
+
+const QUESTOES=[
+  {n:1, dominio:"Exigências Laborais",                dimensao:"Exigências quantitativas",              inv:false},
+  {n:2, dominio:"Exigências Laborais",                dimensao:"Exigências quantitativas",              inv:false},
+  {n:3, dominio:"Exigências Laborais",                dimensao:"Ritmo de trabalho",                     inv:false},
+  {n:4, dominio:"Exigências Laborais",                dimensao:"Exigências Cognitivas",                 inv:false},
+  {n:5, dominio:"Exigências Laborais",                dimensao:"Exigências Cognitivas",                 inv:false},
+  {n:6, dominio:"Exigências Laborais",                dimensao:"Exigências emocionais",                 inv:false},
+  {n:7, dominio:"Organização do Trabalho e Conteúdo", dimensao:"Influência do Trabalho",                inv:true},
+  {n:8, dominio:"Organização do Trabalho e Conteúdo", dimensao:"Possibilidade de Desenvolvimento",     inv:true},
+  {n:9, dominio:"Organização do Trabalho e Conteúdo", dimensao:"Possibilidade de Desenvolvimento",     inv:true},
+  {n:10,dominio:"Relações sociais e liderança",       dimensao:"Previsibilidade",                       inv:true},
+  {n:11,dominio:"Relações sociais e liderança",       dimensao:"Previsibilidade",                       inv:true},
+  {n:12,dominio:"Relações sociais e liderança",       dimensao:"Transparência do Papel Laboral",        inv:true},
+  {n:13,dominio:"Relações sociais e liderança",       dimensao:"Reconhecimento",                        inv:true},
+  {n:14,dominio:"Relações sociais e liderança",       dimensao:"Reconhecimento",                        inv:true},
+  {n:15,dominio:"Relações sociais e liderança",       dimensao:"Suporte social de superiores",          inv:true},
+  {n:16,dominio:"Valores no Local de Trabalho",       dimensao:"Sentido de pertença à comunidade",      inv:true},
+  {n:17,dominio:"Relações sociais e liderança",       dimensao:"Qualidade da liderança",                inv:true},
+  {n:18,dominio:"Relações sociais e liderança",       dimensao:"Qualidade da liderança",                inv:true},
+  {n:19,dominio:"Valores no Local de Trabalho",       dimensao:"Confiança Vertical",                    inv:true},
+  {n:20,dominio:"Valores no Local de Trabalho",       dimensao:"Confiança Vertical",                    inv:true},
+  {n:21,dominio:"Valores no Local de Trabalho",       dimensao:"Justiça Organizacional",                inv:true},
+  {n:22,dominio:"Valores no Local de Trabalho",       dimensao:"Justiça Organizacional",                inv:true},
+  {n:23,dominio:"Personalidade",                      dimensao:"Autoeficácia",                          inv:true},
+  {n:24,dominio:"Organização do Trabalho e Conteúdo", dimensao:"Significado do Trabalho",               inv:true},
+  {n:25,dominio:"Organização do Trabalho e Conteúdo", dimensao:"Significado do Trabalho",               inv:true},
+  {n:26,dominio:"Organização do Trabalho e Conteúdo", dimensao:"Compromisso face ao Local de Trabalho", inv:true},
+  {n:27,dominio:"Interface Trabalho-Indivíduo",       dimensao:"Satisfação com o trabalho",             inv:true},
+  {n:28,dominio:"Interface Trabalho-Indivíduo",       dimensao:"Insegurança",                           inv:false},
+  {n:29,dominio:"Saúde e Bem-Estar",                  dimensao:"Auto Avaliação da Saúde",               inv:true},
+  {n:30,dominio:"Interface Trabalho-Indivíduo",       dimensao:"Conflito Trabalho-Família",             inv:false},
+  {n:31,dominio:"Interface Trabalho-Indivíduo",       dimensao:"Conflito Trabalho-Família",             inv:false},
+  {n:32,dominio:"Saúde e Bem-Estar",                  dimensao:"Problema de sono",                      inv:false},
+  {n:33,dominio:"Saúde e Bem-Estar",                  dimensao:"Burnout",                               inv:false},
+  {n:34,dominio:"Saúde e Bem-Estar",                  dimensao:"Burnout",                               inv:false},
+  {n:35,dominio:"Saúde e Bem-Estar",                  dimensao:"Stress",                                inv:false},
+  {n:36,dominio:"Saúde e Bem-Estar",                  dimensao:"Stress",                                inv:false},
+  {n:37,dominio:"Saúde e Bem-Estar",                  dimensao:"Sintomas Depressivos",                  inv:false},
+  {n:38,dominio:"Comportamento Ofensivo",             dimensao:"Comportamento Ofensivo",                inv:false},
+  {n:39,dominio:"Comportamento Ofensivo",             dimensao:"Comportamento Ofensivo",                inv:false},
+  {n:40,dominio:"Comportamento Ofensivo",             dimensao:"Comportamento Ofensivo",                inv:false},
+  {n:41,dominio:"Comportamento Ofensivo",             dimensao:"Comportamento Ofensivo",                inv:false},
+];
+
+const DOMINIOS=[
+  "Exigências Laborais","Organização do Trabalho e Conteúdo",
+  "Relações sociais e liderança","Valores no Local de Trabalho",
+  "Personalidade","Interface Trabalho-Indivíduo",
+  "Saúde e Bem-Estar","Comportamento Ofensivo",
+];
+
+const COR={
+  "Situação Favorável":   {bg:"#22c55e",text:"white"},
+  "Situação Intermediária":{bg:"#f59e0b",text:"white"},
+  "Risco para Saúde":     {bg:"#ef4444",text:"white"},
+};
+
+function extrairNum(str){
+  if(str===null||str===undefined||str==="") return null;
+  const s=String(str).trim();
+  if(/^\d$/.test(s)) return parseInt(s);
+  const m=s.match(/^(\d)\s*[-–]?\s*/);
+  if(m){const v=parseInt(m[1]);return(v>=1&&v<=5)?v:null;}
+  const a=s.match(/(\d)/);
+  if(a){const v=parseInt(a[1]);return(v>=1&&v<=5)?v:null;}
+  return null;
+}
+
+function toScore5(qn,raw){
+  const v=parseInt(raw);
+  if(!v||v<1||v>5) return null;
+  const q=QUESTOES.find(q=>q.n===qn);
+  return q.inv?6-v:v;
+}
+
+function classificar(m){
+  if(m===null||isNaN(m)) return null;
+  if(m<=2.33) return "Situação Favorável";
+  if(m<=3.66) return "Situação Intermediária";
+  return "Risco para Saúde";
+}
+
+function calcMedias(linhas){
+  const dimS={},domS={};
+  QUESTOES.forEach(q=>{dimS[q.dimensao]=[];});
+  DOMINIOS.forEach(d=>{domS[d]=[];});
+  linhas.forEach(l=>{
+    QUESTOES.forEach((q,i)=>{
+      const s=toScore5(q.n,l.respostas[i]);
+      if(s!==null){dimS[q.dimensao].push(s);domS[q.dominio].push(s);}
+    });
+  });
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const mediaDim={},mediaDom={};
+  Object.keys(dimS).forEach(k=>mediaDim[k]=avg(dimS[k]));
+  DOMINIOS.forEach(k=>mediaDom[k]=avg(domS[k]));
+  return{mediaDim,mediaDom};
+}
+
+const fmt=v=>(v!==null&&!isNaN(v))?v.toFixed(2):"—";
+const corNum=m=>m===null?"#aaa":m<=2.33?"#16a34a":m<=3.66?"#d97706":"#dc2626";
+
+function App(){
+  const [tab,setTab]=useState("dashboard");
+  const [dados,setDados]=useState([]);
+  const [setorFiltro,setSetorFiltro]=useState("Todos");
+  const [msg,setMsg]=useState("");
+  const [aiLoading,setAiLoading]=useState(false);
+  const [resumos,setResumos]=useState({});
+  const fileRef=useRef();
+
+  function importarCSV(e){
+    const file=e.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const text=ev.target.result;
+        const lines=text.trim().split(/\r?\n/);
+        const sep=lines[0].includes(";")?";":lines[0].includes("\t")?"\t":",";
+        const parseRow=row=>{
+          const cols=[];let cur="",inQ=false;
+          for(let i=0;i<row.length;i++){
+            const c=row[i];
+            if(c==='"'){inQ=!inQ;}
+            else if(c===sep&&!inQ){cols.push(cur.trim());cur="";}
+            else cur+=c;
+          }
+          cols.push(cur.trim());
+          return cols;
+        };
+        const headers=parseRow(lines[0]).map(h=>h.replace(/^"|"$/g,""));
+        const iSetor=1,iFuncao=2,iSexo=3,iTurno=4,qStart=5,iAberta=46;
+        const novos=[];
+        for(let i=1;i<lines.length;i++){
+          if(!lines[i].trim()) continue;
+          const cols=parseRow(lines[i]).map(c=>c.replace(/^"|"$/g,""));
+          if(cols.length<10||!cols[0]) continue;
+          const respostas=[];
+          for(let q=0;q<41;q++) respostas.push(extrairNum(cols[qStart+q]));
+          if(respostas.every(r=>r===null)) continue;
+          const setorRaw=cols[iSetor]||"Não informado";
+          const setorValido=setorRaw.length<=60&&!/^\d/.test(setorRaw)&&!/[.!?]/.test(setorRaw);
+          if(!setorValido) continue;
+          novos.push({
+            setor:setorRaw,
+            funcao:cols[iFuncao]||"",
+            sexo:cols[iSexo]||"",
+            turno:cols[iTurno]||"",
+            respostas,
+            comentario:cols[iAberta]||"",
+          });
+        }
+        setDados(novos);
+        const cc=novos.filter(r=>r.comentario.trim().length>3).length;
+        setMsg(`✅ ${novos.length} respondentes importados. ${cc} comentários encontrados.`);
+        setTimeout(()=>setMsg(""),5000);
+      }catch(err){setMsg("❌ Erro: "+err.message);}
+    };
+    reader.readAsText(file,"UTF-8");
+    e.target.value="";
+  }
+
+  const setores=useMemo(()=>{
+    const s=[...new Set(dados.map(d=>d.setor))].sort();
+    return["Todos",...s];
+  },[dados]);
+
+  const filtrados=useMemo(()=>
+    setorFiltro==="Todos"?dados:dados.filter(d=>d.setor===setorFiltro),
+  [dados,setorFiltro]);
+
+  const {mediaDim,mediaDom}=useMemo(()=>calcMedias(filtrados),[filtrados]);
+
+  const contDom=useMemo(()=>{
+    const c={};
+    DOMINIOS.forEach(d=>c[d]={F:0,I:0,R:0});
+    filtrados.forEach(l=>{
+      DOMINIOS.forEach(dom=>{
+        const qs=QUESTOES.filter(q=>q.dominio===dom);
+        const vals=qs.map(q=>toScore5(q.n,l.respostas[q.n-1])).filter(v=>v!==null);
+        if(!vals.length) return;
+        const m=vals.reduce((a,b)=>a+b,0)/vals.length;
+        const cl=classificar(m);
+        if(cl==="Situação Favorável") c[dom].F++;
+        else if(cl==="Situação Intermediária") c[dom].I++;
+        else if(cl==="Risco para Saúde") c[dom].R++;
+      });
+    });
+    return c;
+  },[filtrados]);
+
+  const porSetor=useMemo(()=>{
+    const sl=[...new Set(dados.map(d=>d.setor))].sort();
+    return sl.map(s=>{
+      const sub=dados.filter(d=>d.setor===s);
+      const{mediaDom}=calcMedias(sub);
+      const comentarios=sub.map(r=>r.comentario).filter(c=>c&&c.trim().length>3);
+      return{setor:s,n:sub.length,mediaDom,comentarios};
+    });
+  },[dados]);
+
+  async function gerarResumo(setor,comentarios){
+    if(!comentarios.length) return;
+    setAiLoading(setor);
+    try{
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1000,
+          messages:[{role:"user",content:`Você é especialista em saúde ocupacional. Analise os comentários do setor "${setor}" do questionário COPSOQ II.\n\nComentários:\n${comentarios.map((c,i)=>`${i+1}. "${c}"`).join("\n")}\n\nFaça um resumo com:\n1. **Principais temas**\n2. **Pontos positivos**\n3. **Principais queixas**\n4. **Sugestões de melhoria**\n\nSeja conciso (máx 300 palavras). Responda em português brasileiro.`}]
+        })
+      });
+      const data=await resp.json();
+      setResumos(prev=>({...prev,[setor]:data.content[0].text}));
+    }catch(err){
+      setResumos(prev=>({...prev,[setor]:"Erro: "+err.message}));
+    }
+    setAiLoading(false);
+  }
+
+  const chartData=DOMINIOS.map(d=>({
+    name:d.length>20?d.substring(0,20)+"…":d,
+    full:d,
+    Favorável:contDom[d].F,
+    Intermediária:contDom[d].I,
+    Risco:contDom[d].R,
+    media:mediaDom[d],
+  }));
+
+  const TT=({active,payload,label})=>{
+    if(!active||!payload) return null;
+    const it=chartData.find(c=>c.name===label);
+    return React.createElement("div",{style:{background:"white",border:"1px solid #ddd",padding:10,borderRadius:8,fontSize:12}},
+      React.createElement("p",{style:{fontWeight:700,margin:"0 0 4px"}},it?.full||label),
+      ...payload.map((p,i)=>React.createElement("p",{key:i,style:{color:p.fill,margin:2}},`${p.name}: ${p.value}`)),
+      it?.media!=null&&React.createElement("p",{style:{margin:"4px 0 0",color:"#333"}},`Média: ${fmt(it.media)}`)
+    );
+  };
+
+  const renderMD=txt=>txt.split("\n").map((line,i)=>{
+    const parts=line.split(/\*\*(.*?)\*\*/g);
+    return React.createElement("p",{key:i,style:{margin:"3px 0",lineHeight:1.6,fontSize:13}},
+      parts.map((p,j)=>j%2===1?React.createElement("strong",{key:j},p):p)
+    );
+  });
+
+  const semDados=filtrados.length===0;
+  const tabs=[["dashboard","📊 Dashboard"],["dimensoes","📐 Dimensões"],["dominios","🏷️ Domínios"],["setores","🏢 Por Setor"],["abertas","💬 Questões Abertas"],["dados","📋 Dados"]];
+
+  return React.createElement("div",{style:{fontFamily:"'Segoe UI',sans-serif",background:"#f0f4f8",minHeight:"100vh"}},
+    // HEADER
+    React.createElement("div",{style:{background:"linear-gradient(135deg,#1e3a5f,#2d6a9f)",color:"white",padding:"16px 24px"}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}},
+        React.createElement("div",null,
+          React.createElement("h1",{style:{margin:0,fontSize:20,fontWeight:700}},"🧠 COPSOQ II — Fatores de Risco Psicossocial"),
+          React.createElement("p",{style:{margin:"3px 0 0",opacity:.8,fontSize:12}},`${dados.length} respondentes totais | ${filtrados.length} no filtro`)
+        ),
+        React.createElement("div",{style:{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}},
+          React.createElement("button",{onClick:()=>fileRef.current.click(),style:{background:"#22c55e",color:"white",border:"none",padding:"8px 16px",borderRadius:6,cursor:"pointer",fontWeight:600,fontSize:13}},"📂 Importar CSV"),
+          React.createElement("input",{ref:fileRef,type:"file",accept:".csv",style:{display:"none"},onChange:importarCSV}),
+          setores.length>1&&React.createElement("select",{value:setorFiltro,onChange:e=>setSetorFiltro(e.target.value),style:{padding:"7px 12px",borderRadius:6,border:"none",fontSize:13,cursor:"pointer"}},
+            setores.map(s=>React.createElement("option",{key:s},s))
+          )
+        )
+      ),
+      msg&&React.createElement("div",{style:{marginTop:8,background:"rgba(255,255,255,.15)",padding:"6px 12px",borderRadius:6,fontSize:13}},msg)
+    ),
+    // TABS
+    React.createElement("div",{style:{display:"flex",gap:2,padding:"10px 20px 0",background:"white",borderBottom:"2px solid #e2e8f0",overflowX:"auto"}},
+      tabs.map(([id,lb])=>React.createElement("button",{key:id,onClick:()=>setTab(id),style:{
+        padding:"8px 16px",border:"none",cursor:"pointer",borderRadius:"6px 6px 0 0",
+        fontWeight:tab===id?700:400,background:tab===id?"#1e3a5f":"transparent",
+        color:tab===id?"white":"#555",fontSize:13,whiteSpace:"nowrap"
+      }},lb))
+    ),
+    // CONTENT
+    React.createElement("div",{style:{padding:20}},
+      semDados&&tab!=="dados"&&React.createElement("div",{style:{background:"#fef9c3",border:"1px solid #fde047",borderRadius:10,padding:20,textAlign:"center",marginBottom:20}},
+        React.createElement("p",{style:{margin:0,color:"#854d0e",fontSize:15}},"⚠️ Importe o CSV para começar — clique em ",React.createElement("strong",null,"📂 Importar CSV"))
+      ),
+
+      // DASHBOARD
+      tab==="dashboard"&&!semDados&&React.createElement("div",null,
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))",gap:12,marginBottom:20}},
+          DOMINIOS.map(dom=>{
+            const m=mediaDom[dom],cl=classificar(m),cor=cl?COR[cl]:{bg:"#94a3b8",text:"white"};
+            return React.createElement("div",{key:dom,style:{background:"white",borderRadius:10,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,.08)"}},
+              React.createElement("div",{style:{background:cor.bg,color:cor.text,padding:"10px 14px"}},
+                React.createElement("div",{style:{fontSize:11,opacity:.9,marginBottom:2}},dom),
+                React.createElement("div",{style:{fontSize:26,fontWeight:700}},fmt(m),React.createElement("span",{style:{fontSize:13,fontWeight:400}},"/5,00"))
+              ),
+              React.createElement("div",{style:{padding:"8px 14px",display:"flex",justifyContent:"space-between"}},
+                React.createElement("span",{style:{fontSize:11,color:"#555",fontWeight:600}},cl||"Sem dados"),
+                React.createElement("span",{style:{fontSize:11,color:"#888"}},`✅${contDom[dom].F} 🟡${contDom[dom].I} 🔴${contDom[dom].R}`)
+              )
+            );
+          })
+        ),
+        React.createElement("div",{style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)",marginBottom:16}},
+          React.createElement("h3",{style:{margin:"0 0 14px",color:"#1e3a5f",fontSize:15}},"Distribuição por Classificação — Domínios"),
+          React.createElement(ResponsiveContainer,{width:"100%",height:300},
+            React.createElement(BarChart,{data:chartData,layout:"vertical",margin:{left:10,right:20,top:4,bottom:4}},
+              React.createElement(CartesianGrid,{strokeDasharray:"3 3",horizontal:false}),
+              React.createElement(XAxis,{type:"number",allowDecimals:false}),
+              React.createElement(YAxis,{type:"category",dataKey:"name",width:160,tick:{fontSize:11}}),
+              React.createElement(Tooltip,{content:React.createElement(TT)}),
+              React.createElement(Legend),
+              React.createElement(Bar,{dataKey:"Favorável",stackId:"a",fill:"#22c55e",name:"Situação Favorável"}),
+              React.createElement(Bar,{dataKey:"Intermediária",stackId:"a",fill:"#f59e0b",name:"Situação Intermediária"}),
+              React.createElement(Bar,{dataKey:"Risco",stackId:"a",fill:"#ef4444",name:"Risco para Saúde"})
+            )
+          )
+        ),
+        React.createElement("div",{style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)"}},
+          React.createElement("h3",{style:{margin:"0 0 14px",color:"#1e3a5f",fontSize:15}},"Média por Domínio (1,00–5,00 | menor = mais favorável)"),
+          React.createElement(ResponsiveContainer,{width:"100%",height:280},
+            React.createElement(BarChart,{data:chartData,layout:"vertical",margin:{left:10,right:50,top:4,bottom:4}},
+              React.createElement(CartesianGrid,{strokeDasharray:"3 3",horizontal:false}),
+              React.createElement(XAxis,{type:"number",domain:[1,5],tickFormatter:v=>v.toFixed(1)}),
+              React.createElement(YAxis,{type:"category",dataKey:"name",width:160,tick:{fontSize:11}}),
+              React.createElement(Tooltip,{content:React.createElement(TT)}),
+              React.createElement(Bar,{dataKey:"media",name:"Média",fill:"#2d6a9f",radius:[0,4,4,0],label:{position:"right",formatter:v=>v?v.toFixed(2):"",fontSize:11,fill:"#333"}})
+            )
+          )
+        )
+      ),
+
+      // DIMENSÕES
+      tab==="dimensoes"&&!semDados&&React.createElement("div",{style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)"}},
+        React.createElement("h3",{style:{margin:"0 0 14px",color:"#1e3a5f",fontSize:15}},"Resultado por Dimensão"),
+        React.createElement("div",{style:{overflowX:"auto"}},
+          React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:12}},
+            React.createElement("thead",null,
+              React.createElement("tr",{style:{background:"#1e3a5f",color:"white"}},
+                ["Dimensão","Domínio","Questões","Média","Classificação"].map(h=>React.createElement("th",{key:h,style:{padding:"9px 12px",textAlign:h==="Média"||h==="Classificação"?"center":"left"}},h))
+              )
+            ),
+            React.createElement("tbody",null,
+              [...new Set(QUESTOES.map(q=>q.dimensao))].map((dim,i)=>{
+                const qs=QUESTOES.filter(q=>q.dimensao===dim),m=mediaDim[dim],cl=classificar(m);
+                return React.createElement("tr",{key:dim,style:{background:i%2===0?"#f8fafc":"white"}},
+                  React.createElement("td",{style:{padding:"8px 12px",fontWeight:500}},dim),
+                  React.createElement("td",{style:{padding:"8px 12px",color:"#666",fontSize:11}},qs[0].dominio),
+                  React.createElement("td",{style:{padding:"8px 12px",textAlign:"center",color:"#888",fontSize:11}},qs.map(q=>q.n).join(", ")),
+                  React.createElement("td",{style:{padding:"8px 12px",textAlign:"center",fontWeight:700,color:corNum(m)}},fmt(m)),
+                  React.createElement("td",{style:{padding:"8px 12px",textAlign:"center"}},
+                    cl?React.createElement("span",{style:{background:COR[cl].bg,color:COR[cl].text,padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600}},cl)
+                      :React.createElement("span",{style:{color:"#aaa"}},"—")
+                  )
+                );
+              })
+            )
+          )
+        ),
+        React.createElement("div",{style:{marginTop:14,padding:12,background:"#f0f9ff",borderRadius:8,border:"1px solid #bae6fd",fontSize:12}},
+          React.createElement("strong",null,"Escala 1,00–5,00 | menor = mais favorável: "),
+          React.createElement("span",{style:{color:"#16a34a"}},"■ Favorável ≤2,33 "),
+          React.createElement("span",{style:{color:"#d97706"}},"■ Intermediária 2,34–3,66 "),
+          React.createElement("span",{style:{color:"#dc2626"}},"■ Risco >3,66")
+        )
+      ),
+
+      // DOMÍNIOS
+      tab==="dominios"&&!semDados&&React.createElement("div",{style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)"}},
+        React.createElement("h3",{style:{margin:"0 0 14px",color:"#1e3a5f",fontSize:15}},"Resultado por Domínio"),
+        React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13}},
+          React.createElement("thead",null,
+            React.createElement("tr",{style:{background:"#1e3a5f",color:"white"}},
+              ["Domínio","Questões","✅ Favorável","🟡 Intermediária","🔴 Risco","Média","Classificação"].map(h=>
+                React.createElement("th",{key:h,style:{padding:"10px 12px",textAlign:["Domínio","Questões"].includes(h)?"left":"center"}},h)
+              )
+            )
+          ),
+          React.createElement("tbody",null,
+            DOMINIOS.map((dom,i)=>{
+              const m=mediaDom[dom],cl=classificar(m),qs=QUESTOES.filter(q=>q.dominio===dom).map(q=>q.n);
+              return React.createElement("tr",{key:dom,style:{background:i%2===0?"#f8fafc":"white"}},
+                React.createElement("td",{style:{padding:"10px 12px",fontWeight:600}},dom),
+                React.createElement("td",{style:{padding:"10px 12px",textAlign:"center",color:"#888",fontSize:11}},qs.join(", ")),
+                React.createElement("td",{style:{padding:"10px 12px",textAlign:"center",color:"#16a34a",fontWeight:700}},contDom[dom].F),
+                React.createElement("td",{style:{padding:"10px 12px",textAlign:"center",color:"#d97706",fontWeight:700}},contDom[dom].I),
+                React.createElement("td",{style:{padding:"10px 12px",textAlign:"center",color:"#dc2626",fontWeight:700}},contDom[dom].R),
+                React.createElement("td",{style:{padding:"10px 12px",textAlign:"center",fontWeight:700,fontSize:15,color:corNum(m)}},fmt(m)),
+                React.createElement("td",{style:{padding:"10px 12px",textAlign:"center"}},
+                  cl?React.createElement("span",{style:{background:COR[cl].bg,color:COR[cl].text,padding:"4px 12px",borderRadius:20,fontSize:12,fontWeight:700}},cl)
+                    :React.createElement("span",{style:{color:"#aaa"}},"—")
+                )
+              );
+            })
+          )
+        )
+      ),
+
+      // POR SETOR
+      tab==="setores"&&React.createElement("div",null,
+        !dados.length&&React.createElement("div",{style:{background:"#fef9c3",border:"1px solid #fde047",borderRadius:10,padding:20,textAlign:"center"}},
+          React.createElement("p",{style:{margin:0,color:"#854d0e"}},"⚠️ Importe o CSV primeiro.")
+        ),
+        porSetor.map(({setor,n,mediaDom:md})=>
+          React.createElement("div",{key:setor,style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)",marginBottom:16}},
+            React.createElement("h3",{style:{margin:"0 0 12px",color:"#1e3a5f",display:"flex",justifyContent:"space-between"}},
+              React.createElement("span",null,"🏢 "+setor),
+              React.createElement("span",{style:{fontSize:13,color:"#888",fontWeight:400}},`${n} respondente${n!==1?"s":""}`)
+            ),
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:12}},
+              React.createElement("thead",null,
+                React.createElement("tr",{style:{background:"#f1f5f9"}},
+                  ["Domínio","Média","Classificação"].map(h=>React.createElement("th",{key:h,style:{padding:"7px 10px",textAlign:h==="Domínio"?"left":"center"}},h))
+                )
+              ),
+              React.createElement("tbody",null,
+                DOMINIOS.map((dom,i)=>{
+                  const m=md[dom],cl=classificar(m);
+                  return React.createElement("tr",{key:dom,style:{background:i%2===0?"#f8fafc":"white"}},
+                    React.createElement("td",{style:{padding:"7px 10px",fontWeight:500}},dom),
+                    React.createElement("td",{style:{padding:"7px 10px",textAlign:"center",fontWeight:700,color:corNum(m)}},fmt(m)),
+                    React.createElement("td",{style:{padding:"7px 10px",textAlign:"center"}},
+                      cl?React.createElement("span",{style:{background:COR[cl].bg,color:COR[cl].text,padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:600}},cl)
+                        :React.createElement("span",{style:{color:"#aaa"}},"—")
+                    )
+                  );
+                })
+              )
+            )
+          )
+        )
+      ),
+
+      // QUESTÕES ABERTAS
+      tab==="abertas"&&React.createElement("div",null,
+        !dados.length&&React.createElement("div",{style:{background:"#fef9c3",border:"1px solid #fde047",borderRadius:10,padding:20,textAlign:"center"}},
+          React.createElement("p",{style:{margin:0,color:"#854d0e"}},"⚠️ Importe o CSV primeiro.")
+        ),
+        porSetor.map(({setor,comentarios})=>{
+          const validos=comentarios.filter(c=>c&&c.trim().length>3);
+          return React.createElement("div",{key:setor,style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)",marginBottom:16}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}},
+              React.createElement("h3",{style:{margin:0,color:"#1e3a5f"}},`💬 ${setor} `,React.createElement("span",{style:{fontSize:13,color:"#888",fontWeight:400}},`(${validos.length} comentário${validos.length!==1?"s":""})`)),
+              validos.length>0&&React.createElement("button",{
+                onClick:()=>gerarResumo(setor,validos),
+                disabled:aiLoading===setor,
+                style:{background:"#7c3aed",color:"white",border:"none",padding:"7px 14px",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:600,opacity:aiLoading===setor?.7:1}
+              },aiLoading===setor?"⏳ Analisando...":"🤖 Gerar Resumo com IA")
+            ),
+            resumos[setor]&&React.createElement("div",{style:{background:"#f5f3ff",border:"1px solid #c4b5fd",borderRadius:8,padding:14,marginBottom:14}},
+              React.createElement("p",{style:{margin:"0 0 8px",fontWeight:700,color:"#7c3aed",fontSize:13}},"🤖 Análise por IA"),
+              renderMD(resumos[setor])
+            ),
+            validos.length===0
+              ?React.createElement("p",{style:{color:"#aaa",fontStyle:"italic",fontSize:13}},"Nenhum comentário neste setor.")
+              :React.createElement("div",{style:{maxHeight:300,overflowY:"auto"}},
+                validos.map((c,i)=>React.createElement("div",{key:i,style:{padding:"10px 12px",background:i%2===0?"#f8fafc":"white",borderRadius:6,marginBottom:4,fontSize:13,lineHeight:1.6,borderLeft:"3px solid #c4b5fd"}},
+                  React.createElement("span",{style:{color:"#888",fontSize:11,marginRight:8}},`#${i+1}`),c
+                ))
+              )
+          );
+        })
+      ),
+
+      // DADOS
+      tab==="dados"&&React.createElement("div",{style:{background:"white",borderRadius:10,padding:20,boxShadow:"0 2px 8px rgba(0,0,0,.08)"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}},
+          React.createElement("h3",{style:{margin:0,color:"#1e3a5f",fontSize:15}},`📋 Dados (${dados.length} respondentes)`),
+          dados.length>0&&React.createElement("button",{onClick:()=>{setDados([]);setSetorFiltro("Todos");setResumos({});},style:{background:"#ef4444",color:"white",border:"none",padding:"6px 14px",borderRadius:6,cursor:"pointer",fontSize:12}},"🗑️ Limpar")
+        ),
+        !dados.length
+          ?React.createElement("p",{style:{color:"#aaa",textAlign:"center",padding:30}},"Nenhum dado importado.")
+          :React.createElement("div",{style:{overflowX:"auto"}},
+            React.createElement("table",{style:{borderCollapse:"collapse",fontSize:11}},
+              React.createElement("thead",null,
+                React.createElement("tr",{style:{background:"#1e3a5f",color:"white"}},
+                  React.createElement("th",{style:{padding:"6px 8px"}},"#"),
+                  React.createElement("th",{style:{padding:"6px 8px",whiteSpace:"nowrap"}},"Setor"),
+                  React.createElement("th",{style:{padding:"6px 8px"}},"Sexo"),
+                  ...Array(41).fill(0).map((_,i)=>React.createElement("th",{key:i,style:{padding:"6px 3px",minWidth:26}},`Q${i+1}`)),
+                  React.createElement("th",{style:{padding:"6px 8px"}},"Comentário")
+                )
+              ),
+              React.createElement("tbody",null,
+                dados.map((l,r)=>React.createElement("tr",{key:r,style:{background:r%2===0?"#f8fafc":"white"}},
+                  React.createElement("td",{style:{padding:"5px 8px",color:"#888",fontWeight:600}},r+1),
+                  React.createElement("td",{style:{padding:"5px 8px",whiteSpace:"nowrap"}},l.setor),
+                  React.createElement("td",{style:{padding:"5px 8px"}},l.sexo),
+                  ...l.respostas.map((v,c)=>{
+                    const s=toScore5(c+1,v);
+                    const bg=s===null?"white":s<=2.33?"#dcfce7":s<=3.66?"#fef9c3":"#fee2e2";
+                    return React.createElement("td",{key:c,style:{padding:"5px 3px",textAlign:"center",background:bg}},v||"—");
+                  }),
+                  React.createElement("td",{style:{padding:"5px 8px",maxWidth:150,fontSize:10,color:"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},title:l.comentario},l.comentario||"—")
+                ))
+              )
+            )
+          )
+      )
+    ),
+    React.createElement("div",{style:{textAlign:"center",padding:16,color:"#94a3b8",fontSize:11}},
+      "COPSOQ II • Escala 1,00–5,00 • Favorável ≤2,33 | Intermediária 2,34–3,66 | Risco >3,66"
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
