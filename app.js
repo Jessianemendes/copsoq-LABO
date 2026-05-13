@@ -3140,7 +3140,7 @@ function gerarAEPpdf(){
       });
       fichasSetor+='</p></div>';
       
-      invFichas+='<div style="border:2px solid #7d2020;border-radius:8px;margin-bottom:16px;overflow:hidden">'+
+      invFichas+='<div style="border:2px solid #7d2020;border-radius:8px;margin-bottom:16px;overflow:hidden;page-break-inside:auto">'+
         '<div style="background:#7d2020;color:white;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'+
           '<div><strong style="font-size:9pt">'+gheNome+' - '+setor+'</strong>'+
           '<span style="font-size:7pt;opacity:.9;margin-left:8px">'+(funcao&&funcao!=='\u2014'?'Fun\u00e7\u00e3o: '+funcao:'')+'</span></div>'+
@@ -3169,7 +3169,7 @@ function gerarAEPpdf(){
       }
       
       if(isFamA){
-        fichasSetor+='<div style="border:1px solid #e2e8f0;border-radius:6px;margin:8px 0;page-break-inside:avoid;overflow:hidden;font-size:7.5pt">'+
+        fichasSetor+='<div style="border:1px solid #e2e8f0;border-radius:6px;margin:8px 0;overflow:hidden;font-size:7.5pt">'+
           '<table style="width:100%;border-collapse:collapse">'+
           '<tr style="background:#fef3c7"><td colspan="4" style="padding:4px 8px;font-weight:800;text-align:center;font-size:8pt;border:1px solid #e2e8f0">Identifica\u00e7\u00e3o</td></tr>'+
           '<tr><td style="width:22%;padding:4px 8px;font-weight:700;background:#fafafa;border:1px solid #e2e8f0">Grupo</td>'+
@@ -3208,7 +3208,7 @@ function gerarAEPpdf(){
         var sNome2=(_pfInvG&&fd.sv2)?_pfInvG.sNomes[Math.max(0,fd.sv2-1)]||'':'';
         var estVal=fd.cv?(['Certa','Incerta','Altamente Incerta'][Math.min(fd.cv,2)]||'\u2014'):'\u2014';
         
-        fichasSetor+='<div style="border:1px solid #e2e8f0;border-radius:6px;margin:8px 0;page-break-inside:avoid;overflow:hidden;font-size:7.5pt">'+
+        fichasSetor+='<div style="border:1px solid #e2e8f0;border-radius:6px;margin:8px 0;overflow:hidden;font-size:7.5pt">'+
           '<table style="width:100%;border-collapse:collapse">'+
           '<tr><td style="padding:4px 8px;font-weight:700;background:#fafafa;border:1px solid #e2e8f0;width:25%">Exposi\u00e7\u00e3o</td>'+
             '<td colspan="3" style="padding:4px 8px;border:1px solid #e2e8f0">'+(EXPOSICAO_DOM[fd.dom]||'Cont\u00ednua/Permanente')+'</td></tr>'+
@@ -3240,7 +3240,7 @@ function gerarAEPpdf(){
     });
     
     if(fichasSetor){
-      invFichas+='<div style="border:2px solid #7d2020;border-radius:8px;margin-bottom:16px;overflow:hidden">'+
+      invFichas+='<div style="border:2px solid #7d2020;border-radius:8px;margin-bottom:16px;overflow:hidden;page-break-inside:auto">'+
         '<div style="background:#7d2020;color:white;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'+
           '<div><strong style="font-size:9pt">'+gheNome+' - '+setor+'</strong>'+
           '<span style="font-size:7pt;opacity:.9;margin-left:8px">'+(funcao&&funcao!=='\u2014'?'Fun\u00e7\u00e3o: '+funcao:'')+'</span></div>'+
